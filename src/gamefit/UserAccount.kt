@@ -1,7 +1,11 @@
 class UserAccount(val username: String) {
     var penalty: Int = 0
         private set
+    private var currentPlan: Map<Exercise, Int> = emptyMap()
     private val matches = mutableListOf<Match>()
+    fun assignPlan(plan: Map<Exercise, Int>) {
+        currentPlan = plan
+    }
     var kdaTarget:Double = 2.0
     fun addPenalty(penaltyValue:Int){
         if(penaltyValue > 0) {
@@ -9,22 +13,29 @@ class UserAccount(val username: String) {
             println("Penalty: $penalty")
         }
     }
-    fun resetPenalty(){
-        penalty = 0
-        println("Penalty: $penalty, reset completed")
-    }
-    fun completeWork(repsDone: Int)
-    {
-        if(repsDone <= 0 || penalty == 0) return
-        if(repsDone < penalty)
-        {
-            println("Too weak, son")
-            penalty -= repsDone
+    fun completeWork() {
+        if (currentPlan.isEmpty()) {
+            println("There is no assigned exercise plan.")
+            return
         }
-        else {
-            println("Well done")
-            resetPenalty()
+
+        for ((exercise, repetitions) in currentPlan) {
+            val completedPoints = repetitions * exercise.points
+
+            exercise.donePoints += completedPoints
+            penalty -= completedPoints
+
+            println("${exercise.name}: $repetitions repetitions completed")
         }
+
+        if (penalty < 0) {
+            penalty = 0
+        }
+
+        currentPlan = emptyMap()
+
+        println("Work completed.")
+        println("Remaining penalty: $penalty")
     }
     fun addMatch(match: Match){
         matches.add(match)
