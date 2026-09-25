@@ -20,7 +20,10 @@ fun main()
         when (choice) {
             "1" -> {
                 val matches = provider.getMatches()
-                service.processMatches(first, matches)
+                val results = service.processMatches(first, matches)
+                for (result in results) {
+                    printPenaltyResult(result)
+                }
             }
             "2" -> {
                 val a = first.penalty

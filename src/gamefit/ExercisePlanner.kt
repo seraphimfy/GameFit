@@ -3,7 +3,7 @@ class ExercisePlanner(private val exercises: List<Exercise>){
         return exercise.points/exercise.loadCoefficient
     }
     fun planExercise(remainingPoints: Int): Map<Exercise, Int> {
-        for (exercise in exercises) {
+       /* for (exercise in exercises) {
             println(
                 "${exercise.name}: " +
                         "points=${exercise.points}, " +
@@ -11,7 +11,7 @@ class ExercisePlanner(private val exercises: List<Exercise>){
                         "load=${exercise.loadCoefficient}, " +
                         "priority=${calculatePriority(exercise)}"
             )
-        }
+        }*/
         var remaining = remainingPoints
         val plan = mutableMapOf<Exercise, Int>()
         while (remaining > 0) {

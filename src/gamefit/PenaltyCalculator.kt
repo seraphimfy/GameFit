@@ -1,5 +1,5 @@
 class PenaltyCalculator {
-    fun calculatePenalty(match: Match, target: Double): Int {
+    fun calculatePenalty(match: Match, target: Double): PenaltyResult {
         val currKDA = match.kda
 
         val kdaResult = when {
@@ -14,18 +14,13 @@ class PenaltyCalculator {
             else -> if (!match.matchWon) 40 else 30
         }
 
-        val matchResult = if (match.matchWon) "WIN" else "LOSS"
-
-        println(
-            """
-            KDA: $currKDA
-            KDA target: $target
-            KDA result: $kdaResult
-            Match result: $matchResult
-            Penalty: $penalty points
-            """.trimIndent()
+        return PenaltyResult(
+            kda = currKDA,
+            target = target,
+            kdaResult = kdaResult,
+            matchWon = match.matchWon,
+            penaltyPoints = penalty
         )
-
-        return penalty
     }
+
 }
