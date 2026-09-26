@@ -3,20 +3,23 @@ class UserAccount(val username: String) {
         private set
     private var currentPlan: Map<Exercise, Int> = emptyMap()
     private val matches = mutableListOf<Match>()
-    fun assignPlan(plan: Map<Exercise, Int>) {
+    fun assignPlan(plan: Map<Exercise, Int>): Boolean {
+        if (penalty == 0) {
+            return false
+        }
+
         currentPlan = plan
+        return true
     }
     var kdaTarget:Double = 2.0
     fun addPenalty(penaltyValue:Int){
         if(penaltyValue > 0) {
             penalty += penaltyValue
-            println("Penalty: $penalty")
         }
     }
-    fun completeWork() {
+    fun completeWork(): Map<Exercise, Int> {
         if (currentPlan.isEmpty()) {
-            println("There is no assigned exercise plan.")
-            return
+            return emptyMap()
         }
 
         for ((exercise, repetitions) in currentPlan) {
@@ -24,35 +27,29 @@ class UserAccount(val username: String) {
 
             exercise.donePoints += completedPoints
             penalty -= completedPoints
-
-            println("${exercise.name}: $repetitions repetitions completed")
         }
 
         if (penalty < 0) {
             penalty = 0
         }
 
+        val completedPlan = currentPlan
         currentPlan = emptyMap()
 
-        println("Work completed.")
-        println("Remaining penalty: $penalty")
+        return completedPlan
     }
     fun addMatch(match: Match){
         matches.add(match)
     }
-    fun showMatches()
-    {
-        for(match in matches)
-        {
-            println("Match: $match")
-        }
+    fun getMatches():List<Match>{
+        return matches.toList()
     }
-    fun changeTarget(target: Double) {
+    fun changeTarget(target: Double): Boolean {
         if (target <= 0) {
-            println("Target must be greater than 0")
-            return
+            return false
         }
+
         kdaTarget = target
-        println("KDA target changed to $kdaTarget")
+        return true
     }
 }

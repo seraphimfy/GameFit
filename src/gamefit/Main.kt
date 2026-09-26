@@ -26,30 +26,39 @@ fun main()
                 }
             }
             "2" -> {
-                val a = first.penalty
-                println("Penalty: $a")
-
+                printPenalty(first.penalty)
             }
             "3" -> {
-                first.completeWork()
+                val completedPlan = first.completeWork()
 
+                if (completedPlan.isEmpty()) {
+                    printNoAssignedPlan()
+                } else {
+                    printCompletedWork(completedPlan)
+                }
             }
-            "4" ->
-            {
+            "4" -> {
                 val plan = planner.planExercise(first.penalty)
-                first.assignPlan(plan)
-                println("Assigned plan:")
 
-                for ((exercise, repetitions) in plan) {
-                    println("${exercise.name}: $repetitions repetitions")
+                if (first.assignPlan(plan)) {
+                    printAssignedPlan(plan)
+                } else {
+                    printNoPenalty()
                 }
             }
             "5" -> {
-                first.showMatches()
+                printMatchHistory(first.getMatches())
             }
             "6" -> {
                 println("Enter target KDA")
-                first.changeTarget(readln().toDouble())
+
+                val target = readln().toDouble()
+
+                if (first.changeTarget(target)) {
+                    printTargetChanged(first.kdaTarget)
+                } else {
+                    printInvalidTarget()
+                }
             }
             "7" -> return
             else -> println("Invalid choice")
