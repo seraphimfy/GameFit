@@ -17,7 +17,3 @@ sourceSets {
         kotlin.srcDirs("src")
     }
 }
-
-application {
-    mainClass.set("TestApiKt")
-}
