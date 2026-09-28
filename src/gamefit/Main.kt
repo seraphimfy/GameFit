@@ -1,22 +1,20 @@
+fun main() {
+    val provider = ManualMatchProvider()
+    val calculator = PenaltyCalculator()
+    val service = MatchProcessingService(calculator)
+    val first = UserAccount("John")
 
-fun main()
-{
-    val provider: MatchProvider = ManualMatchProvider()
-    val calculator: PenaltyCalculator = PenaltyCalculator()
-    val service: MatchProcessingService = MatchProcessingService(calculator)
-    val first: UserAccount = UserAccount("John")
     val exercises = listOf(
-        Exercise("Squats", 1, 0.5, 0),
-        Exercise("Abs", 2,1.0,0),
-        Exercise("Push-ups", 3,1.5,0)
+        Exercise("Squats", 1, 0.5),
+        Exercise("Abs", 2, 1.0),
+        Exercise("Push-ups", 3, 1.5)
     )
-
     val planner = ExercisePlanner(exercises)
 
-
-    while(true) {
+    while (true) {
         println("Choose action: 1.Import match 2.Show penalty 3.Complete penalty 4.assign plan 5.show match history 6.change KDA target 7.exit")
         val choice = readln()
+
         when (choice) {
             "1" -> {
                 val matches = provider.getMatches()
@@ -30,7 +28,6 @@ fun main()
             }
             "3" -> {
                 val completedPlan = first.completeWork()
-
                 if (completedPlan.isEmpty()) {
                     printNoAssignedPlan()
                 } else {
@@ -38,8 +35,7 @@ fun main()
                 }
             }
             "4" -> {
-                val plan = planner.planExercise(first.penalty)
-
+                val plan = planner.planExercise(first.penalty, first)
                 if (first.assignPlan(plan)) {
                     printAssignedPlan(plan)
                 } else {
@@ -51,9 +47,7 @@ fun main()
             }
             "6" -> {
                 println("Enter target KDA")
-
                 val target = readln().toDouble()
-
                 if (first.changeTarget(target)) {
                     printTargetChanged(first.kdaTarget)
                 } else {
@@ -65,4 +59,3 @@ fun main()
         }
     }
 }
-

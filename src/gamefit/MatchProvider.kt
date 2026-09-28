@@ -1,6 +1,7 @@
 interface MatchProvider {
     fun getMatches(): List<Match>
 }
+
 class ManualMatchProvider : MatchProvider {
     override fun getMatches(): List<Match> {
         while (true) {
@@ -12,7 +13,6 @@ class ManualMatchProvider : MatchProvider {
                 continue
             }
 
-            // \\s+ разбивает строку по любому числу пробелов или табов подряд
             val parts = input.split("\\s+".toRegex())
             if (parts.size != 4) {
                 println("Error: expected exactly 4 values (Kills Deaths Assists Result).")
@@ -29,7 +29,15 @@ class ManualMatchProvider : MatchProvider {
                 continue
             }
 
-            val match = Match(kills, deaths, assists, isWin)
+            // Генерируем уникальный ID для ручного ввода
+            val matchId = System.currentTimeMillis()
+            val match = Match(
+                id = matchId,
+                kills = kills,
+                deaths = deaths,
+                assists = assists,
+                matchWon = isWin
+            )
             return listOf(match)
         }
     }
