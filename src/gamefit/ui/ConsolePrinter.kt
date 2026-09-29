@@ -1,3 +1,9 @@
+
+package gamefit.ui
+
+import gamefit.model.Exercise
+import gamefit.model.Match
+import gamefit.model.PenaltyResult
 fun printPenaltyResult(result: PenaltyResult) {
     println(
         """

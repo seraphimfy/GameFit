@@ -1,3 +1,8 @@
+package gamefit.service
+
+import gamefit.model.KdaPerformance
+import gamefit.model.Match
+import gamefit.model.PenaltyResult
 class PenaltyCalculator {
     fun calculatePenalty(match: Match, target: Double): PenaltyResult {
         val currKda = match.kda

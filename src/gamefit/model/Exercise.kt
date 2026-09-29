@@ -1,3 +1,4 @@
+package gamefit.model
 data class Exercise(
     val name: String,
     val points: Int,

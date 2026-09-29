@@ -1,3 +1,4 @@
+package gamefit.model
 data class PenaltyResult(
     val kda: Double,
     val target: Double,

@@ -1,3 +1,6 @@
+package gamefit.provider
+
+import gamefit.model.Match
 interface MatchProvider {
     fun getMatches(): List<Match>
 }

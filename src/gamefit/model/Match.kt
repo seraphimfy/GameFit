@@ -1,3 +1,4 @@
+package gamefit.model
 data class Match(
     val id: Long,
     val kills: Int,

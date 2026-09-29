@@ -1,3 +1,7 @@
+package gamefit.service
+
+import gamefit.model.Exercise
+import gamefit.model.UserAccount
 class ExercisePlanner(private val exercises: List<Exercise>) {
 
     fun calculatePriority(exercise: Exercise, userDonePoints: Int): Double {

@@ -1,3 +1,4 @@
+package gamefit.model
 class UserAccount(val username: String) {
     var penalty: Int = 0
         private set

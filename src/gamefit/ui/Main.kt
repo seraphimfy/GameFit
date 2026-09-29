@@ -1,7 +1,34 @@
+package gamefit.ui
+
+import gamefit.model.Exercise
+import gamefit.model.UserAccount
+import gamefit.provider.ManualMatchProvider
+import gamefit.provider.MatchProvider
+import gamefit.provider.OpenDotaMatchProvider
+import gamefit.repository.InMemoryMatchRepository
+import gamefit.repository.MatchRepository
+import gamefit.service.ExercisePlanner
+import gamefit.service.MatchProcessingService
+import gamefit.service.PenaltyCalculator
+/*
+=====TODO_LIST======
+
+1.2 Реализовать простое локальное хранилище:( сохраянть айди в тхт или джсон, локальная бд)
+1.3 внедрить проверку на наличие матча в бд
+2. вернуть ктор+опендотаАПИ
+2.1Настроить build.gradle.kts:Подключить ktor-client-core, ktor-client-cio, ktor-client-content-negotiation и ktor-serialization-kotlinx-json.
+2.2Подключить плагин kotlinx.serialization
+2.3Доработать DotaMatchResponse Повесить аннотацию @Serializable Добавить поле match_id: Long.   Сделать метод расширения fun DotaMatchResponse.toMatch(): Match, где результат победы высчитывается по формуле слота: (player_slot < 128) == radiant_win.
+3.Написать класс OpenDotaMatchProvider : MatchProvider:   Принимать accountId игрока (Steam32 ID).Делать запрос и возвращать лист матчей
+4.Добавить безопасную обработку сети через runCatching: перехватывать отсутствие интернета и ошибку 429 Too Many Requests (лимит бесплатного тарифа OpenDota).
+5. довести до ума баланс планировщика упражнений
+6. постепенный переход к тг боту или андроид приложению(когда будет готов бек начать помогать эле с фронтом)
+*/
 fun main() {
-    val provider = ManualMatchProvider()
+    val repository: MatchRepository = InMemoryMatchRepository()
+    val provider: MatchProvider = OpenDotaMatchProvider(1215182978L, 5)
     val calculator = PenaltyCalculator()
-    val service = MatchProcessingService(calculator)
+    val service = MatchProcessingService(calculator, repository)
     val first = UserAccount("John")
 
     val exercises = listOf(
@@ -14,13 +41,16 @@ fun main() {
     while (true) {
         println("Choose action: 1.Import match 2.Show penalty 3.Complete penalty 4.assign plan 5.show match history 6.change KDA target 7.exit")
         val choice = readln()
-
         when (choice) {
             "1" -> {
                 val matches = provider.getMatches()
                 val results = service.processMatches(first, matches)
-                for (result in results) {
-                    printPenaltyResult(result)
+                if (results.isEmpty()) {
+                    println("No new matches to process (already processed).")
+                } else {
+                    for (result in results) {
+                        printPenaltyResult(result)
+                    }
                 }
             }
             "2" -> {
