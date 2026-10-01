@@ -5,6 +5,8 @@ import gamefit.model.UserAccount
 import gamefit.provider.ManualMatchProvider
 import gamefit.provider.MatchProvider
 import gamefit.provider.OpenDotaMatchProvider
+import gamefit.provider.getPlayerId
+import gamefit.provider.getPlayerLim
 import gamefit.repository.InMemoryMatchRepository
 import gamefit.repository.MatchRepository
 import gamefit.service.ExercisePlanner
@@ -12,21 +14,20 @@ import gamefit.service.MatchProcessingService
 import gamefit.service.PenaltyCalculator
 /*
 =====TODO_LIST======
+1.1 ручной ввод айдишника и кол-ва матчей
+1.2 Реализовать простое локальное хранилище:( сохраянть айди в тхт или джсон, локальная бд) - сделано в озу
+1.3 внедрить проверку на наличие матча в бд - проверка в озу
 
-1.2 Реализовать простое локальное хранилище:( сохраянть айди в тхт или джсон, локальная бд)
-1.3 внедрить проверку на наличие матча в бд
-2. вернуть ктор+опендотаАПИ
-2.1Настроить build.gradle.kts:Подключить ktor-client-core, ktor-client-cio, ktor-client-content-negotiation и ktor-serialization-kotlinx-json.
-2.2Подключить плагин kotlinx.serialization
-2.3Доработать DotaMatchResponse Повесить аннотацию @Serializable Добавить поле match_id: Long.   Сделать метод расширения fun DotaMatchResponse.toMatch(): Match, где результат победы высчитывается по формуле слота: (player_slot < 128) == radiant_win.
-3.Написать класс OpenDotaMatchProvider : MatchProvider:   Принимать accountId игрока (Steam32 ID).Делать запрос и возвращать лист матчей
+
+
+
 4.Добавить безопасную обработку сети через runCatching: перехватывать отсутствие интернета и ошибку 429 Too Many Requests (лимит бесплатного тарифа OpenDota).
 5. довести до ума баланс планировщика упражнений
 6. постепенный переход к тг боту или андроид приложению(когда будет готов бек начать помогать эле с фронтом)
 */
 fun main() {
     val repository: MatchRepository = InMemoryMatchRepository()
-    val provider: MatchProvider = OpenDotaMatchProvider(1215182978L, 5)
+    val provider: MatchProvider = OpenDotaMatchProvider(getPlayerId().toLong(), getPlayerLim())
     val calculator = PenaltyCalculator()
     val service = MatchProcessingService(calculator, repository)
     val first = UserAccount("John")
