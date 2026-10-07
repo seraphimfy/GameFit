@@ -8,8 +8,9 @@ interface MatchRepository {
     fun save(match: Match)
 
     fun getAll(): List<Match>
+    fun clear()
 }
-class InMemoryMatchRepository : MatchRepository {
+/*class InMemoryMatchRepository : MatchRepository {
     private val processedMatches = mutableMapOf<Long, Match>()
 
     override fun isProceed(id: Long): Boolean {
@@ -23,4 +24,4 @@ class InMemoryMatchRepository : MatchRepository {
     override fun getAll(): List<Match> {
         return processedMatches.values.toList()
     }
-}
+}*/

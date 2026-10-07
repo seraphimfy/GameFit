@@ -1,14 +1,19 @@
 package gamefit.model
-class UserAccount(val username: String) {
-    var penalty: Int = 0
+class UserAccount(
+    val username: String,
+    initialPenalty: Int = 0,
+    initialKdaTarget: Double = 2.0,
+    initialProgress: Map<String, Int> = emptyMap()
+) {
+    var penalty: Int = initialPenalty
         private set
 
-    var kdaTarget: Double = 2.0
+    var kdaTarget: Double = initialKdaTarget
         private set
 
     private var currentPlan: Map<Exercise, Int> = emptyMap()
     private val matches = mutableListOf<Match>()
-    private val exerciseProgress = mutableMapOf<String, Int>()
+    private val exerciseProgress = initialProgress.toMutableMap()
 
     fun getProgress(exerciseName: String): Int {
         return exerciseProgress.getOrDefault(exerciseName, 0)

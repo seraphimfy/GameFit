@@ -1,23 +1,56 @@
 package gamefit.provider
 
-fun getPlayerId(): Int {
-    println("SteamId32 or SteamId64? (enter 1/2)")
-    val input = readln()
+/**
+ * Запрашивает SteamID у пользователя и преобразует его в 32-битный Account ID (Long).
+ * Поддерживает форматы SteamID32 и SteamID64 с защитой от некорректного ввода.
+ */
+fun getPlayerId(): Long {
+    val steamId64Base = 76561197960265728L
 
-    println("Enter your steamID (SteamID32 for dota):")
-    val steamID = readln().toLongOrNull() ?: return 0
-    if (steamID < 0) {println("wrong Input"); return 0}
-    return when (input) {
-        "1" -> steamID.toInt()
-        "2" -> {
-
-            val steamId64Base = 76561197960265728L
-            (steamID - steamId64Base).toInt()
+    while (true) {
+        println("SteamId32 or SteamId64? (enter 1/2):")
+        val formatChoice = readlnOrNull()?.trim()
+        if (formatChoice != "1" && formatChoice != "2") {
+            println("Invalid choice. Please enter 1 for SteamID32 or 2 for SteamID64.")
+            continue
         }
-        else -> 0
+
+        println("Enter your Steam ID:")
+        val rawId = readlnOrNull()?.trim()?.toLongOrNull()
+        if (rawId == null || rawId <= 0) {
+            println("Invalid Steam ID. It must be a positive number. Try again.")
+            continue
+        }
+
+        return when (formatChoice) {
+            "1" -> rawId
+            "2" -> {
+                val accountId = rawId - steamId64Base
+                if (accountId <= 0) {
+                    println("The provided SteamID64 is invalid (resulted in non-positive account ID). Try again.")
+                    continue
+                }
+                accountId
+            }
+            else -> continue
+        }
     }
 }
-fun getPlayerLim():Int {
-    println("Enter limit of recent matches (up to 20)")
-    return readln().toIntOrNull() ?: 1
+
+/**
+ * Запрашивает у пользователя количество последних матчей для загрузки (от 1 до 20).
+ */
+fun getPlayerLim(): Int {
+    while (true) {
+        println("Enter limit of recent matches (1 to 20, default 10):")
+        val input = readlnOrNull()?.trim()
+        if (input.isNullOrEmpty()) {
+            return 10
+        }
+        val limit = input.toIntOrNull()
+        if (limit != null && limit in 1..20) {
+            return limit
+        }
+        println("Limit must be a number between 1 and 20.")
+    }
 }

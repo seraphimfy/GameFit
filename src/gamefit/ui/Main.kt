@@ -7,30 +7,26 @@ import gamefit.provider.MatchProvider
 import gamefit.provider.OpenDotaMatchProvider
 import gamefit.provider.getPlayerId
 import gamefit.provider.getPlayerLim
-import gamefit.repository.InMemoryMatchRepository
+import gamefit.repository.SqliteMatchRepository
 import gamefit.repository.MatchRepository
+import gamefit.repository.SqliteUserRepository
+import gamefit.repository.UserRepository
 import gamefit.service.ExercisePlanner
 import gamefit.service.MatchProcessingService
 import gamefit.service.PenaltyCalculator
-/*
-=====TODO_LIST======
-1.1 ручной ввод айдишника и кол-ва матчей
-1.2 Реализовать простое локальное хранилище:( сохраянть айди в тхт или джсон, локальная бд) - сделано в озу
-1.3 внедрить проверку на наличие матча в бд - проверка в озу
+import java.io.Closeable
+import java.util.Locale
 
-
-
-
-4.Добавить безопасную обработку сети через runCatching: перехватывать отсутствие интернета и ошибку 429 Too Many Requests (лимит бесплатного тарифа OpenDota).
-5. довести до ума баланс планировщика упражнений
-6. постепенный переход к тг боту или андроид приложению(когда будет готов бек начать помогать эле с фронтом)
-*/
 fun main() {
-    val repository: MatchRepository = InMemoryMatchRepository()
-    val provider: MatchProvider = OpenDotaMatchProvider(getPlayerId().toLong(), getPlayerLim())
+    val matchRepository: MatchRepository = SqliteMatchRepository()
+    val userRepository: UserRepository = SqliteUserRepository()
+    val openDotaProvider: MatchProvider = OpenDotaMatchProvider(getPlayerId(), getPlayerLim())
+    val manualProvider: MatchProvider = ManualMatchProvider()
     val calculator = PenaltyCalculator()
-    val service = MatchProcessingService(calculator, repository)
-    val first = UserAccount("John")
+    val service = MatchProcessingService(calculator, matchRepository)
+    val first = userRepository.getOrCreateUser("John")
+    println("\nWelcome to GameFit, ${first.username}!")
+    println("Loaded profile: Penalty: ${first.penalty} points, KDA Target: ${String.format(Locale.US, "%.2f", first.kdaTarget)}")
 
     val exercises = listOf(
         Exercise("Squats", 1, 0.5),
@@ -40,30 +36,49 @@ fun main() {
     val planner = ExercisePlanner(exercises)
 
     while (true) {
-        println("Choose action: 1.Import match 2.Show penalty 3.Complete penalty 4.assign plan 5.show match history 6.change KDA target 7.exit")
-        val choice = readln()
+        println(
+            """
+
+            Choose action:
+            1. Import matches (OpenDota)
+            2. Enter match manually
+            3. Show penalty
+            4. Assign exercise plan
+            5. Complete workout
+            6. Show match history
+            7. Change KDA target
+            8. Reset database
+            0. Exit
+            """.trimIndent()
+        )
+        val choice = readlnOrNull()?.trim()
         when (choice) {
             "1" -> {
-                val matches = provider.getMatches()
+                val matches = openDotaProvider.getMatches()
                 val results = service.processMatches(first, matches)
                 if (results.isEmpty()) {
-                    println("No new matches to process (already processed).")
+                    println("No new matches to process (already processed or failed to fetch).")
                 } else {
+                    userRepository.saveUser(first)
                     for (result in results) {
                         printPenaltyResult(result)
                     }
                 }
             }
             "2" -> {
-                printPenalty(first.penalty)
+                val matches = manualProvider.getMatches()
+                val results = service.processMatches(first, matches)
+                if (results.isEmpty()) {
+                    println("Match already processed.")
+                } else {
+                    userRepository.saveUser(first)
+                    for (result in results) {
+                        printPenaltyResult(result)
+                    }
+                }
             }
             "3" -> {
-                val completedPlan = first.completeWork()
-                if (completedPlan.isEmpty()) {
-                    printNoAssignedPlan()
-                } else {
-                    printCompletedWork(completedPlan)
-                }
+                printPenalty(first.penalty)
             }
             "4" -> {
                 val plan = planner.planExercise(first.penalty, first)
@@ -74,19 +89,41 @@ fun main() {
                 }
             }
             "5" -> {
-                printMatchHistory(first.getMatches())
+                val completedPlan = first.completeWork()
+                if (completedPlan.isEmpty()) {
+                    printNoAssignedPlan()
+                } else {
+                    userRepository.saveUser(first)
+                    printCompletedWork(completedPlan)
+                }
             }
             "6" -> {
-                println("Enter target KDA")
-                val target = readln().toDouble()
-                if (first.changeTarget(target)) {
+                printMatchHistory(first.getMatches())
+            }
+            "7" -> {
+                println("Enter target KDA (e.g. 2.5):")
+                val inputTarget = readlnOrNull()?.trim()?.replace(',', '.')
+                val target = inputTarget?.toDoubleOrNull()
+                if (target != null && first.changeTarget(target)) {
+                    userRepository.saveUser(first)
                     printTargetChanged(first.kdaTarget)
                 } else {
                     printInvalidTarget()
                 }
             }
-            "7" -> return
-            else -> println("Invalid choice")
+            "8" -> {
+                matchRepository.clear()
+                userRepository.clear()
+                println("Database cleared.")
+            }
+            "0" -> {
+                (userRepository as? Closeable)?.close()
+                (matchRepository as? Closeable)?.close()
+                (openDotaProvider as? Closeable)?.close()
+                println("Goodbye!")
+                return
+            }
+            else -> println("Invalid choice. Please select an option from the menu.")
         }
     }
 }
