@@ -1,5 +1,6 @@
 package gamefit.repository
 
+import gamefit.model.Exercise
 import gamefit.model.UserAccount
 import java.io.Closeable
 import java.sql.DriverManager
@@ -29,6 +30,19 @@ class SqliteUserRepository(
                     username TEXT NOT NULL,
                     exercise_name TEXT NOT NULL,
                     done_points INTEGER NOT NULL,
+                    PRIMARY KEY (username, exercise_name)
+                );
+                """.trimIndent()
+            )
+            // Таблица активного плана тренировки
+            statement.executeUpdate(
+                """
+                CREATE TABLE IF NOT EXISTS user_plan (
+                    username TEXT NOT NULL,
+                    exercise_name TEXT NOT NULL,
+                    repetitions INTEGER NOT NULL,
+                    points INTEGER NOT NULL,
+                    base_load REAL NOT NULL,
                     PRIMARY KEY (username, exercise_name)
                 );
                 """.trimIndent()
@@ -64,7 +78,24 @@ class SqliteUserRepository(
                     }
                 }
             }
-            return UserAccount(username, penalty, kdaTarget, progress)
+
+            val plan = mutableMapOf<Exercise, Int>()
+            val queryPlan = "SELECT exercise_name, repetitions, points, base_load FROM user_plan WHERE username = ?"
+            connection.prepareStatement(queryPlan).use { stmt ->
+                stmt.setString(1, username)
+                stmt.executeQuery().use { rs ->
+                    while (rs.next()) {
+                        val exercise = Exercise(
+                            name = rs.getString("exercise_name"),
+                            points = rs.getInt("points"),
+                            baseLoadCoefficient = rs.getDouble("base_load")
+                        )
+                        plan[exercise] = rs.getInt("repetitions")
+                    }
+                }
+            }
+
+            return UserAccount(username, penalty, kdaTarget, progress, plan)
         } else {
             val newUser = UserAccount(username)
             saveUser(newUser)
@@ -103,10 +134,36 @@ class SqliteUserRepository(
                 stmt.executeUpdate()
             }
         }
+
+        val deletePlanSql = "DELETE FROM user_plan WHERE username = ?"
+        connection.prepareStatement(deletePlanSql).use { stmt ->
+            stmt.setString(1, user.username)
+            stmt.executeUpdate()
+        }
+
+        val currentPlan = user.getCurrentPlan()
+        if (currentPlan.isNotEmpty()) {
+            val insertPlanSql = """
+                INSERT INTO user_plan (username, exercise_name, repetitions, points, base_load)
+                VALUES (?, ?, ?, ?, ?)
+            """.trimIndent()
+
+            connection.prepareStatement(insertPlanSql).use { stmt ->
+                for ((exercise, reps) in currentPlan) {
+                    stmt.setString(1, user.username)
+                    stmt.setString(2, exercise.name)
+                    stmt.setInt(3, reps)
+                    stmt.setInt(4, exercise.points)
+                    stmt.setDouble(5, exercise.baseLoadCoefficient)
+                    stmt.executeUpdate()
+                }
+            }
+        }
     }
 
     override fun clear() {
         connection.createStatement().use { stmt ->
+            stmt.executeUpdate("DELETE FROM user_plan")
             stmt.executeUpdate("DELETE FROM user_progress")
             stmt.executeUpdate("DELETE FROM users")
         }

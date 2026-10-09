@@ -28,10 +28,10 @@ class SqliteMatchRepository(
         }
     }
 
-    override fun isProceed(matchId: Long): Boolean {
+    override fun isProceed(id: Long): Boolean {
         val query = "SELECT 1 FROM matches WHERE id = ? LIMIT 1"
         connection.prepareStatement(query).use { statement ->
-            statement.setLong(1, matchId)
+            statement.setLong(1, id)
             val resultSet = statement.executeQuery()
             return resultSet.next()
         }

@@ -3,7 +3,8 @@ class UserAccount(
     val username: String,
     initialPenalty: Int = 0,
     initialKdaTarget: Double = 2.0,
-    initialProgress: Map<String, Int> = emptyMap()
+    initialProgress: Map<String, Int> = emptyMap(),
+    initialPlan: Map<Exercise, Int> = emptyMap()
 ) {
     var penalty: Int = initialPenalty
         private set
@@ -11,7 +12,7 @@ class UserAccount(
     var kdaTarget: Double = initialKdaTarget
         private set
 
-    private var currentPlan: Map<Exercise, Int> = emptyMap()
+    private var currentPlan: Map<Exercise, Int> = initialPlan.toMap()
     private val matches = mutableListOf<Match>()
     private val exerciseProgress = initialProgress.toMutableMap()
 
@@ -20,6 +21,8 @@ class UserAccount(
     }
 
     fun getAllProgress(): Map<String, Int> = exerciseProgress.toMap()
+
+    fun getCurrentPlan(): Map<Exercise, Int> = currentPlan.toMap()
 
     fun assignPlan(plan: Map<Exercise, Int>): Boolean {
         if (penalty == 0) {

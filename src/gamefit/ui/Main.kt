@@ -20,13 +20,20 @@ import java.util.Locale
 fun main() {
     val matchRepository: MatchRepository = SqliteMatchRepository()
     val userRepository: UserRepository = SqliteUserRepository()
-    val openDotaProvider: MatchProvider = OpenDotaMatchProvider(getPlayerId(), getPlayerLim())
     val manualProvider: MatchProvider = ManualMatchProvider()
     val calculator = PenaltyCalculator()
     val service = MatchProcessingService(calculator, matchRepository)
-    val first = userRepository.getOrCreateUser("John")
+
+    println("=== GameFit CLI ===")
+    print("Enter username (press Enter for 'Player'): ")
+    val inputUsername = readlnOrNull()?.trim()
+    val username = if (!inputUsername.isNullOrEmpty()) inputUsername else "Player"
+    var first = userRepository.getOrCreateUser(username)
     println("\nWelcome to GameFit, ${first.username}!")
     println("Loaded profile: Penalty: ${first.penalty} points, KDA Target: ${String.format(Locale.US, "%.2f", first.kdaTarget)}")
+    if (first.getCurrentPlan().isNotEmpty()) {
+        println("Active workout plan restored from database. Select 5 to complete workout.")
+    }
 
     val exercises = listOf(
         Exercise("Squats", 1, 0.5),
@@ -54,15 +61,22 @@ fun main() {
         val choice = readlnOrNull()?.trim()
         when (choice) {
             "1" -> {
-                val matches = openDotaProvider.getMatches()
-                val results = service.processMatches(first, matches)
-                if (results.isEmpty()) {
-                    println("No new matches to process (already processed or failed to fetch).")
-                } else {
-                    userRepository.saveUser(first)
-                    for (result in results) {
-                        printPenaltyResult(result)
+                val accountId = getPlayerId()
+                val limit = getPlayerLim()
+                val openDotaProvider = OpenDotaMatchProvider(accountId, limit)
+                try {
+                    val matches = openDotaProvider.getMatches()
+                    val results = service.processMatches(first, matches)
+                    if (results.isEmpty()) {
+                        println("No new matches to process (already processed or failed to fetch).")
+                    } else {
+                        userRepository.saveUser(first)
+                        for (result in results) {
+                            printPenaltyResult(result)
+                        }
                     }
+                } finally {
+                    openDotaProvider.close()
                 }
             }
             "2" -> {
@@ -83,6 +97,7 @@ fun main() {
             "4" -> {
                 val plan = planner.planExercise(first.penalty, first)
                 if (first.assignPlan(plan)) {
+                    userRepository.saveUser(first)
                     printAssignedPlan(plan)
                 } else {
                     printNoPenalty()
@@ -98,7 +113,7 @@ fun main() {
                 }
             }
             "6" -> {
-                printMatchHistory(first.getMatches())
+                printMatchHistory(matchRepository.getAll())
             }
             "7" -> {
                 println("Enter target KDA (e.g. 2.5):")
@@ -114,12 +129,12 @@ fun main() {
             "8" -> {
                 matchRepository.clear()
                 userRepository.clear()
-                println("Database cleared.")
+                first = userRepository.getOrCreateUser(username)
+                println("Database cleared. Profile reset to default.")
             }
             "0" -> {
                 (userRepository as? Closeable)?.close()
                 (matchRepository as? Closeable)?.close()
-                (openDotaProvider as? Closeable)?.close()
                 println("Goodbye!")
                 return
             }
