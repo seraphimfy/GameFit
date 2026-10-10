@@ -7,6 +7,7 @@ import gamefit.provider.MatchProvider
 import gamefit.provider.OpenDotaMatchProvider
 import gamefit.provider.getPlayerId
 import gamefit.provider.getPlayerLim
+import gamefit.repository.SqliteDatabase
 import gamefit.repository.SqliteMatchRepository
 import gamefit.repository.MatchRepository
 import gamefit.repository.SqliteUserRepository
@@ -14,12 +15,12 @@ import gamefit.repository.UserRepository
 import gamefit.service.ExercisePlanner
 import gamefit.service.MatchProcessingService
 import gamefit.service.PenaltyCalculator
-import java.io.Closeable
 import java.util.Locale
 
 fun main() {
-    val matchRepository: MatchRepository = SqliteMatchRepository()
-    val userRepository: UserRepository = SqliteUserRepository()
+    val database = SqliteDatabase()
+    val matchRepository: MatchRepository = SqliteMatchRepository(database)
+    val userRepository: UserRepository = SqliteUserRepository(database)
     val manualProvider: MatchProvider = ManualMatchProvider()
     val calculator = PenaltyCalculator()
     val service = MatchProcessingService(calculator, matchRepository)
@@ -70,7 +71,6 @@ fun main() {
                     if (results.isEmpty()) {
                         println("No new matches to process (already processed or failed to fetch).")
                     } else {
-                        userRepository.saveUser(first)
                         for (result in results) {
                             printPenaltyResult(result)
                         }
@@ -85,7 +85,6 @@ fun main() {
                 if (results.isEmpty()) {
                     println("Match already processed.")
                 } else {
-                    userRepository.saveUser(first)
                     for (result in results) {
                         printPenaltyResult(result)
                     }
@@ -113,7 +112,7 @@ fun main() {
                 }
             }
             "6" -> {
-                printMatchHistory(matchRepository.getAll())
+                printMatchHistory(matchRepository.getAll(first.username))
             }
             "7" -> {
                 println("Enter target KDA (e.g. 2.5):")
@@ -133,8 +132,7 @@ fun main() {
                 println("Database cleared. Profile reset to default.")
             }
             "0" -> {
-                (userRepository as? Closeable)?.close()
-                (matchRepository as? Closeable)?.close()
+                database.close()
                 println("Goodbye!")
                 return
             }

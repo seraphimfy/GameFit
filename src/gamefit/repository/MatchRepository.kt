@@ -3,11 +3,17 @@ package gamefit.repository
 import gamefit.model.Match
 
 interface MatchRepository {
-    fun isProceed(id: Long): Boolean
+    /**
+     * Сохраняет новый матч и начисляет штраф в одной транзакции.
+     * Возвращает false, если пользователь уже обрабатывал этот матч.
+     */
+    fun saveIfNewWithPenalty(
+        username: String,
+        match: Match,
+        penaltyPoints: Int
+    ): Boolean
 
-    fun save(match: Match)
-
-    fun getAll(): List<Match>
+    fun getAll(username: String): List<Match>
     fun clear()
 }
 /*class InMemoryMatchRepository : MatchRepository {

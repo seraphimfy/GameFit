@@ -2,17 +2,13 @@ package gamefit.repository
 
 import gamefit.model.Exercise
 import gamefit.model.UserAccount
-import java.io.Closeable
-import java.sql.DriverManager
 
 class SqliteUserRepository(
-    dbPath: String = "gamefit.db"
-) : UserRepository, Closeable {
-
-    private val connection = DriverManager.getConnection("jdbc:sqlite:$dbPath")
+    private val database: SqliteDatabase
+) : UserRepository {
 
     init {
-        connection.createStatement().use { statement ->
+        database.connection.createStatement().use { statement ->
             // Таблица пользователей
             statement.executeUpdate(
                 """
@@ -56,7 +52,7 @@ class SqliteUserRepository(
         var kdaTarget = 2.0
         var userExists = false
 
-        connection.prepareStatement(queryUser).use { stmt ->
+        database.connection.prepareStatement(queryUser).use { stmt ->
             stmt.setString(1, username)
             stmt.executeQuery().use { rs ->
                 if (rs.next()) {
@@ -70,7 +66,7 @@ class SqliteUserRepository(
         if (userExists) {
             val progress = mutableMapOf<String, Int>()
             val queryProgress = "SELECT exercise_name, done_points FROM user_progress WHERE username = ?"
-            connection.prepareStatement(queryProgress).use { stmt ->
+            database.connection.prepareStatement(queryProgress).use { stmt ->
                 stmt.setString(1, username)
                 stmt.executeQuery().use { rs ->
                     while (rs.next()) {
@@ -81,7 +77,7 @@ class SqliteUserRepository(
 
             val plan = mutableMapOf<Exercise, Int>()
             val queryPlan = "SELECT exercise_name, repetitions, points, base_load FROM user_plan WHERE username = ?"
-            connection.prepareStatement(queryPlan).use { stmt ->
+            database.connection.prepareStatement(queryPlan).use { stmt ->
                 stmt.setString(1, username)
                 stmt.executeQuery().use { rs ->
                     while (rs.next()) {
@@ -112,7 +108,7 @@ class SqliteUserRepository(
                 kda_target = excluded.kda_target
         """.trimIndent()
 
-        connection.prepareStatement(upsertUserSql).use { stmt ->
+        database.connection.prepareStatement(upsertUserSql).use { stmt ->
             stmt.setString(1, user.username)
             stmt.setInt(2, user.penalty)
             stmt.setDouble(3, user.kdaTarget)
@@ -126,7 +122,7 @@ class SqliteUserRepository(
                 done_points = excluded.done_points
         """.trimIndent()
 
-        connection.prepareStatement(upsertProgressSql).use { stmt ->
+        database.connection.prepareStatement(upsertProgressSql).use { stmt ->
             for ((exerciseName, donePoints) in user.getAllProgress()) {
                 stmt.setString(1, user.username)
                 stmt.setString(2, exerciseName)
@@ -136,7 +132,7 @@ class SqliteUserRepository(
         }
 
         val deletePlanSql = "DELETE FROM user_plan WHERE username = ?"
-        connection.prepareStatement(deletePlanSql).use { stmt ->
+        database.connection.prepareStatement(deletePlanSql).use { stmt ->
             stmt.setString(1, user.username)
             stmt.executeUpdate()
         }
@@ -148,7 +144,7 @@ class SqliteUserRepository(
                 VALUES (?, ?, ?, ?, ?)
             """.trimIndent()
 
-            connection.prepareStatement(insertPlanSql).use { stmt ->
+            database.connection.prepareStatement(insertPlanSql).use { stmt ->
                 for ((exercise, reps) in currentPlan) {
                     stmt.setString(1, user.username)
                     stmt.setString(2, exercise.name)
@@ -162,16 +158,11 @@ class SqliteUserRepository(
     }
 
     override fun clear() {
-        connection.createStatement().use { stmt ->
+        database.connection.createStatement().use { stmt ->
             stmt.executeUpdate("DELETE FROM user_plan")
             stmt.executeUpdate("DELETE FROM user_progress")
             stmt.executeUpdate("DELETE FROM users")
         }
     }
 
-    override fun close() {
-        if (!connection.isClosed) {
-            connection.close()
-        }
-    }
 }

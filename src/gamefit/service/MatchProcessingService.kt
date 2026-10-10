@@ -11,13 +11,19 @@ class MatchProcessingService(private val calculator: PenaltyCalculator, private 
         val results = mutableListOf<PenaltyResult>()
 
         for (match in matches) {
-            if(repository.isProceed(match.id))
-                continue
-
-            repository.save(match)
-            account.addMatch(match)
-
             val result = calculator.calculatePenalty(match, account.kdaTarget)
+
+            val saved = repository.saveIfNewWithPenalty(
+                account.username,
+                match,
+                result.penaltyPoints
+            )
+
+            if (!saved) {
+                continue
+            }
+
+            account.addMatch(match)
             account.addPenalty(result.penaltyPoints)
             results.add(result)
         }
