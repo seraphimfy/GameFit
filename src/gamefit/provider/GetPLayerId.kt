@@ -1,9 +1,6 @@
 package gamefit.provider
 
-/**
- * Запрашивает SteamID у пользователя и преобразует его в 32-битный Account ID (Long).
- * Поддерживает форматы SteamID32 и SteamID64 с защитой от некорректного ввода.
- */
+
 fun getPlayerId(): Long {
     val steamId64Base = 76561197960265728L
 
@@ -37,9 +34,7 @@ fun getPlayerId(): Long {
     }
 }
 
-/**
- * Запрашивает у пользователя количество последних матчей для загрузки (от 1 до 20).
- */
+
 fun getPlayerLim(): Int {
     while (true) {
         println("Enter limit of recent matches (1 to 20, default 10):")

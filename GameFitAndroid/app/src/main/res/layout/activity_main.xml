@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Главный экран: аккаунт, план, прогресс и действия пользователя. -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Информация о пользователе и текущем состоянии штрафа. -->
+        <TextView
+            android:id="@+id/tvUsername"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Пользователь: -"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:paddingBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tvPenalty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Штраф: 0 очков"
+            android:textSize="16sp"
+            android:paddingBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tvKdaTarget"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Цель KDA: 2.0"
+            android:textSize="16sp"
+            android:paddingBottom="24dp" />
+
+        <TextView
+            android:id="@+id/tvWorkoutStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Текущая тренировка: нет"
+            android:textSize="16sp"
+            android:paddingBottom="16dp" />
+
+        <TextView
+            android:id="@+id/tvExerciseProgress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Прогресс упражнений: нет данных"
+            android:textSize="14sp"
+            android:paddingBottom="24dp" />
+
+        <!-- Основные действия приложения. -->
+        <Button
+            android:id="@+id/btnImportMatches"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Импортировать матчи"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/btnManualMatch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ввести матч вручную"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/btnAssignPlan"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Назначить тренировку"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/btnCompleteWorkout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Завершить тренировку"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/btnMatchHistory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="История матчей"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/btnChangeKda"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Изменить цель KDA"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/btnResetData"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Сбросить данные"
+            android:backgroundTint="#D32F2F" />
+
+    </LinearLayout>
+
+</ScrollView>

@@ -1,44 +1,29 @@
-### Gradle ###
+# Gradle
 .gradle/
 build/
+**/build/
 
-### Databases & Local State ###
-*.db
-*.db-journal
-*.sqlite
+# Android local configuration
+local.properties
+**/local.properties
 
-### IntelliJ IDEA ###
+# Android build artifacts
+*.apk
+*.aab
+*.apks
+*.dex
+
+# Kotlin/Java generated files
+*.class
+*.jar
+out/
+
+# IntelliJ IDEA / Android Studio
 .idea/
 *.iml
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
+*.ipr
+*.iws
 
-### Kotlin ###
-.kotlin
-
-### Eclipse ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-
-### VS Code ###
-.vscode/
-
-### OS ###
+# OS files
 .DS_Store
 Thumbs.db
